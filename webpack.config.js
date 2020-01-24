@@ -6,8 +6,8 @@ module.exports = {
   context: path.resolve(__dirname, 'src'),
   mode: 'development',
   entry: {
-    main: './src/index.js',
-    analytics: './src/analytics.js'
+    main: './index.js',
+    analytics: './analytics.js'
   },
   output: {
     filename: '[name].[contenthash].js',
@@ -18,5 +18,13 @@ module.exports = {
       template: path.resolve(__dirname, 'public') + '/index.html'
     }),
     new CleanWebpackPlugin()
-  ]
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      }
+    ]
+  }
 }
