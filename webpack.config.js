@@ -2,6 +2,10 @@ const path = require('path');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniSccExtractPlugin = require('mini-css-extract-plugin');
+
+const isDev = process.env.NODE_ENV === 'development';
+const isProd = process.env.NODE_ENV !== 'development';
 
 module.exports = {
   context: path.resolve(__dirname, 'src'),
@@ -27,11 +31,15 @@ module.exports = {
     }
   },
   devServer: {
-    port: 4200
+    port: 4200,
+    hmr: isDev
   },
   plugins: [
     new HTMLWebpackPlugin({
-      template: path.resolve(__dirname, 'public/index.html')
+      template: path.resolve(__dirname, 'public/index.html'),
+      minify: {
+        collapseWhitespace: isProd
+      }
     }),
     new CleanWebpackPlugin(),
     new CopyWebpackPlugin([
@@ -39,13 +47,17 @@ module.exports = {
         from: path.resolve(__dirname, 'public/favicon.ico'),
         to: path.resolve(__dirname, 'dist')
       }
-    ])
+    ]),
+    new MiniSccExtractPlugin({
+      filename: '[name].[contenthash].css',
+      hmr: isDev
+    })
   ],
   module: {
     rules: [
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: [MiniSccExtractPlugin.loader, 'css-loader']
       },
       {
         test: /\.(png|jpg|svg|gif)$/,
