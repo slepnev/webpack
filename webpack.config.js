@@ -3,9 +3,29 @@ const HTMLWebpackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniSccExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const TerserWebpackPlugin = require('terser-webpack-plugin');
 
 const isDev = process.env.NODE_ENV === 'development';
-const isProd = process.env.NODE_ENV !== 'development';
+const isProd = !isDev;
+
+const optimization = () => {
+  const config ={
+    splitChunks: {
+      chunks: 'all'
+    }
+  };
+
+  if (isProd) {
+    config.minimizer = [
+      new OptimizeCssAssetsPlugin(),
+      new TerserWebpackPlugin()
+    ]
+  }
+
+  return config;
+};
+
 
 module.exports = {
   context: path.resolve(__dirname, 'src'),
@@ -18,11 +38,7 @@ module.exports = {
     filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'dist')
   },
-  optimization: {
-    splitChunks: {
-      chunks: 'all'
-    }
-  },
+  optimization: optimization(),
   resolve: {
     extensions: ['.js', '.png'],
     alias: {
@@ -57,7 +73,30 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        use: [MiniSccExtractPlugin.loader, 'css-loader']
+        use: [
+          {
+            loader: MiniSccExtractPlugin.loader,
+            options: {
+              hmr: isDev,
+              reloadAll: true
+            }
+          },
+          'css-loader'
+        ]
+      },
+      {
+        test: /\.less$/,
+        use: [
+          {
+            loader: MiniSccExtractPlugin.loader,
+            options: {
+              hmr: isDev,
+              reloadAll: true
+            }
+          },
+          'css-loader',
+          'less-loader'
+        ]
       },
       {
         test: /\.(png|jpg|svg|gif)$/,
